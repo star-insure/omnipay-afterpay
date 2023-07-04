@@ -2,6 +2,7 @@
 
 namespace Omnipay\AfterPay\Message;
 
+use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Common\Message\AbstractRequest;
 
 abstract class AfterPayAuthorizeRequest extends AbstractRequest
@@ -232,5 +233,80 @@ abstract class AfterPayAuthorizeRequest extends AbstractRequest
         $subinfo[] = 'Merchant/'.$this->getMerchantId();
 
         return 'Star-Insure-Omnipay-Afterpay ('.join('; ', $subinfo).')' . $this->getUserAgentMerchantUrl();
+    }
+
+    /**
+     * @return array
+     * @throws \Omnipay\Common\Exception\InvalidRequestException
+     */
+    protected function getItemData()
+    {
+        $items = $this->getItems();
+        $itemArray = array();
+        if ($items !== null) {
+            /** @var \Omnipay\Common\ItemInterface $item */
+            foreach ($items as $item) {
+                $itemArray[] = array(
+                    'name'     => $item->getName(),
+                    'quantity' => $item->getQuantity(),
+                    'price'    => array(
+                        'amount'   => $this->formatPrice($item->getPrice()),
+                        'currency' => $this->getCurrency(),
+                    ),
+                );
+            }
+        }
+
+        return $itemArray;
+    }
+
+    /**
+     * @return array
+     * @throws \Omnipay\Common\Exception\InvalidRequestException
+     */
+    protected function getShippingAmount()
+    {
+        $items = $this->getItems();
+        $itemArray = array();
+
+        if ($items !== null) {
+            /** @var \Omnipay\Common\ItemInterface $item */
+            foreach ($items as $item) {
+                $itemArray[] = array(
+                    'name'     => $item->getName(),
+                    'quantity' => $item->getQuantity(),
+                    'price'    => array(
+                        'amount'   => $this->formatPrice($item->getPrice()),
+                        'currency' => $this->getCurrency(),
+                    ),
+                );
+            }
+        }
+
+        return $itemArray;
+    }
+
+    /**
+     * @param string|float|int $amount
+     * @return null|string
+     * @throws \Omnipay\Common\Exception\InvalidRequestException
+     */
+    protected function formatPrice($amount)
+    {
+        if ($amount) {
+            if (!is_float($amount) &&
+                $this->getCurrencyDecimalPlaces() > 0 &&
+                false === strpos((string) $amount, '.')
+            ) {
+                throw new InvalidRequestException(
+                    'Please specify amount as a string or float, ' .
+                    'with decimal places (e.g. \'10.00\' to represent $10.00).'
+                );
+            }
+
+            return $this->formatCurrency($amount);
+        }
+
+        return null;
     }
 }

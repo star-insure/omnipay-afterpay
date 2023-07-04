@@ -89,58 +89,6 @@ class PurchaseRequest extends AfterPayAuthorizeRequest
     }
 
     /**
-     * @return array
-     * @throws \Omnipay\Common\Exception\InvalidRequestException
-     */
-    public function getShippingAmount()
-    {
-        $items = $this->getItems();
-        $itemArray = array();
-
-        if ($items !== null) {
-            /** @var \Omnipay\Common\ItemInterface $item */
-            foreach ($items as $item) {
-                $itemArray[] = array(
-                    'name'     => $item->getName(),
-                    'quantity' => $item->getQuantity(),
-                    'price'    => array(
-                        'amount'   => $this->formatPrice($item->getPrice()),
-                        'currency' => $this->getCurrency(),
-                    ),
-                );
-            }
-        }
-
-        return $itemArray;
-    }
-
-    /**
-     * @return array
-     * @throws \Omnipay\Common\Exception\InvalidRequestException
-     */
-    public function getItemData()
-    {
-        $items = $this->getItems();
-        $itemArray = array();
-
-        if ($items !== null) {
-            /** @var \Omnipay\Common\ItemInterface $item */
-            foreach ($items as $item) {
-                $itemArray[] = array(
-                    'name'     => $item->getName(),
-                    'quantity' => $item->getQuantity(),
-                    'price'    => array(
-                        'amount'   => $this->formatPrice($item->getPrice()),
-                        'currency' => $this->getCurrency(),
-                    ),
-                );
-            }
-        }
-
-        return $itemArray;
-    }
-
-    /**
      * @return string
      */
     public function getEndpoint()
@@ -158,27 +106,4 @@ class PurchaseRequest extends AfterPayAuthorizeRequest
         return new PurchaseResponse($this, $data, $statusCode);
     }
 
-    /**
-     * @param string|float|int $amount
-     * @return null|string
-     * @throws \Omnipay\Common\Exception\InvalidRequestException
-     */
-    protected function formatPrice($amount)
-    {
-        if ($amount) {
-            if (!is_float($amount) &&
-                $this->getCurrencyDecimalPlaces() > 0 &&
-                false === strpos((string) $amount, '.')
-            ) {
-                throw new InvalidRequestException(
-                    'Please specify amount as a string or float, ' .
-                    'with decimal places (e.g. \'10.00\' to represent $10.00).'
-                );
-            }
-
-            return $this->formatCurrency($amount);
-        }
-
-        return null;
-    }
 }

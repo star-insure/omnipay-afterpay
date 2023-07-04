@@ -2,6 +2,8 @@
 
 namespace Omnipay\AfterPay\Message;
 
+use Omnipay\Common\Exception\InvalidRequestException;
+
 class RecurringPaymentRequest extends AfterPayAuthorizeRequest
 {
     /**
@@ -10,7 +12,7 @@ class RecurringPaymentRequest extends AfterPayAuthorizeRequest
      */
     public function getData()
     {
-        return [
+        $data = [
             "requestId" => $this->getTransactionId(),
             "paymentMethod" => [
                 "type"  => "BILLING_AGREEMENT",
@@ -22,6 +24,12 @@ class RecurringPaymentRequest extends AfterPayAuthorizeRequest
             ],
             'merchantReference' => $this->getTransactionId()
         ];
+
+        if ($items = $this->getItemData()) {
+            $data['items'] = $items;
+        }
+
+        return $data;
     }
 
     /**
