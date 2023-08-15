@@ -12,6 +12,12 @@ class RecurringPaymentRequest extends AfterPayAuthorizeRequest
      */
     public function getData()
     {
+        $card = $this->getCard();
+
+        // Normalize consumer names as AfterPay will reject the request with a missing surname
+        $givenNames = $card->getFirstName();
+        $surname = $card->getLastName();
+
         $data = [
             "requestId" => $this->getTransactionId(),
             "paymentMethod" => [
@@ -21,6 +27,11 @@ class RecurringPaymentRequest extends AfterPayAuthorizeRequest
             'amount' => [
                 'amount'   => $this->getAmount(),
                 'currency' => $this->getCurrency()
+            ],
+            'consumer' => [
+                'givenNames' => $givenNames,
+                'surname'    => $surname,
+                'email'      => $card->getEmail()
             ],
             'merchantReference' => $this->getTransactionId()
         ];
